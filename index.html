@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>VBTI · 兽医人格测评</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#F7F4EE;
+  --ink:#1A1814;
+  --ink2:#4A4740;
+  --ink3:#8A8680;
+  --accent:#7B6EF6;
+  --accent-light:#EAE8FF;
+  --warm:#E8915A;
+  --warm-light:#FDF0E8;
+  --teal:#2DA882;
+  --teal-light:#E2F5EE;
+  --border:#E2DDD6;
+  --serif:'Noto Serif SC',serif;
+  --sans:'Noto Sans SC',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{background:var(--cream);color:var(--ink);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
+
+/* ─── SCREENS ─── */
+.screen{display:none;min-height:100vh;animation:fadeIn .4s ease}
+.screen.active{display:flex;flex-direction:column}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── INTRO SCREEN ─── */
+#intro{align-items:center;justify-content:center;padding:2rem;text-align:center;position:relative;overflow:hidden}
+.intro-bg{position:absolute;inset:0;pointer-events:none}
+.intro-ring{position:absolute;border-radius:50%;border:1px solid var(--border)}
+.intro-ring:nth-child(1){width:300px;height:300px;top:-80px;right:-80px;opacity:.4}
+.intro-ring:nth-child(2){width:200px;height:200px;bottom:-40px;left:-60px;opacity:.3}
+.intro-ring:nth-child(3){width:160px;height:160px;top:40%;left:-40px;opacity:.2}
+.intro-content{position:relative;z-index:1;max-width:360px}
+.intro-logo{font-family:var(--serif);font-size:48px;font-weight:600;letter-spacing:.08em;color:var(--ink);margin-bottom:.25rem}
+.intro-subtitle{font-size:13px;color:var(--ink3);letter-spacing:.15em;margin-bottom:2.5rem;font-weight:300}
+.intro-title{font-family:var(--serif);font-size:22px;font-weight:600;line-height:1.5;margin-bottom:1rem;color:var(--ink)}
+.intro-desc{font-size:14px;color:var(--ink2);line-height:1.9;margin-bottom:2rem}
+.intro-meta{display:flex;justify-content:center;gap:1.5rem;margin-bottom:2.5rem}
+.intro-meta span{font-size:12px;color:var(--ink3);display:flex;align-items:center;gap:5px}
+.intro-meta i{width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block}
+.btn-start{display:inline-block;background:var(--ink);color:var(--cream);font-family:var(--serif);font-size:16px;padding:14px 40px;border-radius:40px;border:none;cursor:pointer;letter-spacing:.05em;transition:transform .15s,background .15s}
+.btn-start:active{transform:scale(.97)}
+.intro-note{font-size:11px;color:var(--ink3);margin-top:1.25rem}
+
+/* ─── QUIZ SCREEN ─── */
+#quiz{padding:0}
+.quiz-header{padding:1.25rem 1.5rem .75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem}
+.quiz-back{width:32px;height:32px;border:none;background:none;cursor:pointer;color:var(--ink2);font-size:18px;display:flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0}
+.quiz-back:active{background:var(--border)}
+.quiz-progress-wrap{flex:1}
+.quiz-prog-text{font-size:12px;color:var(--ink3);margin-bottom:5px;display:flex;justify-content:space-between}
+.quiz-prog-bar{height:3px;background:var(--border);border-radius:2px}
+.quiz-prog-fill{height:3px;background:var(--accent);border-radius:2px;transition:width .4s ease}
+.quiz-body{flex:1;padding:1.75rem 1.5rem;display:flex;flex-direction:column}
+.quiz-dim-tag{display:inline-block;font-size:11px;padding:3px 10px;border-radius:12px;background:var(--accent-light);color:var(--accent);margin-bottom:1rem;letter-spacing:.05em}
+.quiz-dim-tag.bonus{background:var(--warm-light);color:var(--warm)}
+.quiz-q{font-family:var(--serif);font-size:18px;font-weight:600;line-height:1.65;margin-bottom:2rem;color:var(--ink)}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;flex:1}
+.opt{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 16px;text-align:left;cursor:pointer;font-size:14px;color:var(--ink2);line-height:1.6;font-family:var(--sans);transition:border-color .15s,background .15s,transform .1s;width:100%}
+.opt:active{transform:scale(.99)}
+.opt.selected{border-color:var(--accent);background:var(--accent-light);color:var(--ink)}
+.quiz-footer{padding:1.25rem 1.5rem;border-top:1px solid var(--border)}
+.btn-next{width:100%;background:var(--ink);color:var(--cream);border:none;border-radius:40px;padding:15px;font-size:16px;font-family:var(--serif);cursor:pointer;letter-spacing:.04em;transition:opacity .15s,transform .1s;opacity:.35;pointer-events:none}
+.btn-next.ready{opacity:1;pointer-events:auto}
+.btn-next.ready:active{transform:scale(.98)}
+
+/* ─── LOADING SCREEN ─── */
+#loading{align-items:center;justify-content:center;text-align:center;gap:1.5rem}
+.loading-anim{display:flex;gap:8px;justify-content:center}
+.loading-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);animation:dotPulse 1.2s ease-in-out infinite}
+.loading-dot:nth-child(2){animation-delay:.15s;background:var(--warm)}
+.loading-dot:nth-child(3){animation-delay:.3s;background:var(--teal)}
+@keyframes dotPulse{0%,100%{transform:scale(.6);opacity:.4}50%{transform:scale(1);opacity:1}}
+.loading-text{font-family:var(--serif);font-size:18px;color:var(--ink);animation:textFade 2s ease infinite}
+@keyframes textFade{0%,100%{opacity:.4}50%{opacity:1}}
+
+/* ─── RESULT SCREEN ─── */
+#result{padding:0;align-items:stretch}
+.result-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.result-hero{padding:2.5rem 1.5rem 2rem;text-align:center;position:relative;overflow:hidden}
+.result-hero-bg{position:absolute;inset:0;opacity:.15;pointer-events:none}
+.result-icon{width:90px;height:90px;margin:0 auto 1.25rem;position:relative;z-index:1}
+.result-type-code{font-size:11px;letter-spacing:.2em;color:var(--ink3);margin-bottom:.5rem;font-weight:300;position:relative;z-index:1}
+.result-name{font-family:var(--serif);font-size:28px;font-weight:600;margin-bottom:.4rem;position:relative;z-index:1}
+.result-sub{font-size:14px;color:var(--ink2);position:relative;z-index:1}
+.result-dims{display:flex;justify-content:center;gap:8px;margin-top:1.25rem;flex-wrap:wrap;position:relative;z-index:1}
+.result-dim{font-size:11px;padding:4px 12px;border-radius:12px;border:1px solid currentColor;letter-spacing:.05em}
+.result-section{padding:1.25rem 1.5rem;border-top:1px solid var(--border)}
+.result-section-label{font-size:11px;letter-spacing:.15em;color:var(--ink3);font-weight:500;margin-bottom:.75rem}
+.result-scene{font-size:14px;line-height:1.9;color:var(--ink2);font-style:italic;padding:12px 14px;background:#fff;border-radius:10px;border-left:3px solid var(--accent)}
+.result-desc-block{font-size:14px;line-height:2;color:var(--ink2);margin-bottom:.9rem}
+.result-quote{font-family:var(--serif);font-size:20px;font-weight:600;line-height:1.65;text-align:center;padding:1.5rem;border-radius:14px;margin:.5rem 0}
+.result-owner{font-size:13px;line-height:1.9;color:var(--ink2);padding:12px 14px;background:#fff;border-radius:10px}
+.result-owner-name{font-size:11px;font-weight:500;margin-bottom:.5rem;letter-spacing:.1em}
+.result-chart{margin:.5rem 0}
+.dim-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.dim-row-label{font-size:12px;color:var(--ink3);width:52px;flex-shrink:0;text-align:right}
+.dim-row-track{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.dim-row-fill{height:6px;border-radius:3px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.dim-row-end{font-size:12px;color:var(--ink3);width:52px;flex-shrink:0}
+.result-match{font-size:13px;color:var(--ink2);line-height:1.8;padding:12px 14px;background:var(--accent-light);border-radius:10px}
+
+/* ─── SHARE BAR ─── */
+.share-bar{padding:1.25rem 1.5rem 2rem;border-top:1px solid var(--border)}
+.share-hint{font-size:12px;color:var(--ink3);text-align:center;margin-bottom:1rem}
+.share-btns{display:flex;gap:10px}
+.btn-share{flex:1;padding:13px;border-radius:40px;font-size:14px;font-family:var(--serif);cursor:pointer;letter-spacing:.03em;transition:transform .1s,opacity .15s;border:1px solid var(--border);background:#fff;color:var(--ink)}
+.btn-share:active{transform:scale(.97)}
+.btn-share.primary{background:var(--ink);color:var(--cream);border-color:var(--ink)}
+.btn-again{width:100%;margin-top:10px;padding:13px;border-radius:40px;font-size:14px;font-family:var(--serif);cursor:pointer;background:none;border:1px solid var(--border);color:var(--ink2);letter-spacing:.03em}
+.btn-again:active{opacity:.7}
+
+/* ─── TOAST ─── */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--cream);padding:10px 20px;border-radius:20px;font-size:13px;opacity:0;transition:all .3s;pointer-events:none;z-index:999;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- INTRO -->
+<div class="screen active" id="intro">
+  <div class="intro-bg">
+    <div class="intro-ring"></div>
+    <div class="intro-ring"></div>
+    <div class="intro-ring"></div>
+  </div>
+  <div class="intro-content">
+    <div class="intro-logo">VBTI</div>
+    <div class="intro-subtitle">VETERINARIAN BEING TYPE INDICATOR</div>
+    <div class="intro-title">测出你是<br>哪种兽医灵魂</div>
+    <div class="intro-desc">每一种兽医，都值得被看见。<br>这里有一面镜子，专门为你们做的。</div>
+    <div class="intro-meta">
+      <span><i></i>20道题</span>
+      <span><i></i>约4分钟</span>
+      <span><i></i>8种人格</span>
+    </div>
+    <button class="btn-start" onclick="startQuiz()">开始测评</button>
+    <div class="intro-note">基于情感维度 · 压力维度 · 驱动维度三轴构建</div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="screen" id="quiz">
+  <div class="quiz-header">
+    <button class="quiz-back" onclick="goBack()">←</button>
+    <div class="quiz-progress-wrap">
+      <div class="quiz-prog-text">
+        <span id="prog-label">第 1 题</span>
+        <span id="prog-count">1 / 20</span>
+      </div>
+      <div class="quiz-prog-bar"><div class="quiz-prog-fill" id="prog-fill" style="width:5%"></div></div>
+    </div>
+  </div>
+  <div class="quiz-body">
+    <div class="quiz-dim-tag" id="dim-tag">情感维度</div>
+    <div class="quiz-q" id="q-text"></div>
+    <div class="quiz-opts" id="q-opts"></div>
+  </div>
+  <div class="quiz-footer">
+    <button class="btn-next" id="btn-next" onclick="goNext()">下一题</button>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div class="screen" id="loading">
+  <div class="loading-anim">
+    <div class="loading-dot"></div>
+    <div class="loading-dot"></div>
+    <div class="loading-dot"></div>
+  </div>
+  <div class="loading-text">正在分析你的兽医灵魂…</div>
+</div>
+
+<!-- RESULT -->
+<div class="screen" id="result">
+  <div class="result-scroll" id="result-scroll"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const Q=[
+{id:1,dim:'E',tag:'情感维度',text:'一只老猫在手术台上没撑过来，主人在门口等着。你推开门的那一刻……',opts:[{t:'深吸一口气，先稳住自己，再开口',d:'D'},{t:'眼眶已经红了，但还是要说',d:'E'},{t:'脑子里在过措辞，嘴上还没动',d:'D'},{t:'不知道怎么，眼泪比话先出来',d:'E'}]},
+{id:2,dim:'I',tag:'压力维度',text:'连续上了12小时班，终于到家。你做的第一件事是？',opts:[{t:'倒在沙发上，谁也不想见',d:'I'},{t:'发条消息给同事吐槽今天的奇葩病例',d:'O'},{t:'打开手机刷同行群看看大家在聊啥',d:'O'},{t:'洗澡，一个人安静缓一缓',d:'I'}]},
+{id:3,dim:'M',tag:'驱动维度',text:'当初为什么选择做兽医？',opts:[{t:'从小就觉得动物需要有人守护',d:'M'},{t:'喜欢诊断的过程，像解谜一样',d:'C'},{t:'说不清，就是走到这里了',d:'M'},{t:'想做一件靠真本事吃饭的事',d:'C'}]},
+{id:4,dim:'E',tag:'情感维度',text:'主人突然崩溃大哭，你会……',opts:[{t:'递纸巾，轻轻拍一下肩膀',d:'E'},{t:'保持专业距离，说一些安慰的话',d:'D'},{t:'心里很难受，但表情尽量平静',d:'D'},{t:'有时候自己也跟着哽咽',d:'E'}]},
+{id:5,dim:'I',tag:'压力维度',text:'遇到一个特别难缠的医疗纠纷，你的第一反应是？',opts:[{t:'一个人在诊室待一会儿，先冷静',d:'I'},{t:'马上找同事说，不吐不快',d:'O'},{t:'发群里让大家帮忙分析',d:'O'},{t:'记在心里，回家慢慢消化',d:'I'}]},
+{id:6,dim:'M',tag:'驱动维度',text:'最让你觉得这份工作值得的瞬间是？',opts:[{t:'一只本来判了死刑的猫，活下来了',d:'M'},{t:'终于诊断出别人都没查出来的病',d:'C'},{t:'主人说"谢谢你，我们全家都谢谢你"',d:'M'},{t:'自己的操作越来越稳，越来越准',d:'C'}]},
+{id:7,dim:'E',tag:'情感维度',text:'下班前五分钟来了一只"只是看看"的狗，你心里在想……',opts:[{t:'没关系，它需要我',d:'E'},{t:'……它需要我（但我也需要下班）',d:'E'},{t:'开始在心里默算加班费',d:'D'},{t:'微笑，然后灵魂出窍',d:'D'}]},
+{id:8,dim:'I',tag:'压力维度',text:'被主人当众质疑"你们兽医就是骗钱的"，事后你……',opts:[{t:'一个人气了好久，但没跟任何人说',d:'I'},{t:'找同事说了，被骂得很爽',d:'O'},{t:'发群里让大家气一气',d:'O'},{t:'回家跟家人说，求一个抱抱',d:'O'}]},
+{id:9,dim:'M',tag:'驱动维度',text:'如果有一天收入腰斩但工作本身没变，你会……',opts:[{t:'挣扎，但大概率还是干',d:'M'},{t:'认真考虑转行',d:'C'},{t:'觉得不公平，但暂时没有别的选项',d:'M'},{t:'努力提升技术，让自己值那个钱',d:'C'}]},
+{id:10,dim:'E',tag:'情感维度',text:'手术成功，动物状态很好。主人感激地握着你的手，你……',opts:[{t:'心里暖暖的，这一天值了',d:'E'},{t:'职业性地点头，说"应该的"',d:'D'},{t:'笑得特别真，忍不住',d:'E'},{t:'已经开始想下一台了',d:'D'}]},
+{id:11,dim:'I',tag:'压力维度',text:'晚上睡前，你脑子里最常出现的是？',opts:[{t:'今天那个病例，有没有哪里没想到',d:'I'},{t:'明天的排班和手术清单',d:'I'},{t:'今天跟某某同事说的话',d:'O'},{t:'什么都有，乱七八糟的',d:'O'}]},
+{id:12,dim:'M',tag:'驱动维度',text:'有主人问你"这病是不是因为我没照顾好"，你会……',opts:[{t:'直接说不是，帮对方减轻负担',d:'E'},{t:'专业解释，语气格外轻柔',d:'M'},{t:'说着说着自己也有点红眼眶',d:'E'},{t:'先稳住对方，回去自己偷偷难受',d:'M'}]},
+{id:13,dim:'C',tag:'驱动维度',text:'遇到教科书上没有的罕见病例，你的感受是？',opts:[{t:'好奇心爆棚，想搞清楚',d:'C'},{t:'压力很大，怕处理不好',d:'M'},{t:'兴奋和紧张各占一半',d:'C'},{t:'第一反应是找文献',d:'C'}]},
+{id:14,dim:'I',tag:'压力维度',text:'你和同事之间的状态更像？',opts:[{t:'有几个能说心里话的，其余点头之交',d:'I'},{t:'跟大多数人都能聊，话很多',d:'O'},{t:'工作上配合很好，私下比较少联系',d:'I'},{t:'同事群很活跃，我是主要输出者',d:'O'}]},
+{id:15,dim:'M',tag:'驱动维度',text:'如果让你形容"理想中的自己"，你选哪个？',opts:[{t:'让每一只动物都感受到被善待',d:'M'},{t:'在这行做到顶尖水平',d:'C'},{t:'被动物和主人都信任的那种医生',d:'M'},{t:'说出诊断时同行会点头的那种',d:'C'}]},
+{id:16,dim:'E',tag:'情感维度',text:'有只流浪猫被好心人送来，治好了但无人领养。你……',opts:[{t:'已经想给它起名字了',d:'E'},{t:'帮忙发朋友圈找领养',d:'E'},{t:'尽力治，领养是另一件事',d:'D'},{t:'诊所养不起，但心里过意不去',d:'D'}]},
+{id:17,dim:'I',tag:'压力维度',text:'下班后最理想的状态是？',opts:[{t:'一个人安静，不说话',d:'I'},{t:'朋友聚聚，把今天的事说出来',d:'O'},{t:'刷刷手机，不用动脑',d:'I'},{t:'打电话找人聊聊',d:'O'}]},
+{id:18,dim:'C',tag:'驱动维度',text:'你觉得做一个好兽医，最重要的是？',opts:[{t:'技术过硬，判断准确',d:'C'},{t:'真心对待每一只动物',d:'M'},{t:'两者都要，缺一不可',d:'C'},{t:'能让主人放心把动物交给你',d:'M'}]},
+{id:19,dim:'X',tag:'彩蛋题',bonus:true,text:'你在诊室里说得最多的一句话是？',opts:[{t:'"先别急，我看一下"',d:'X'},{t:'"回去观察一下吧"',d:'X'},{t:'"这个情况有点复杂……"',d:'X'},{t:'"它其实挺配合的"（谎言）',d:'X'}]},
+{id:20,dim:'X',tag:'彩蛋题',bonus:true,text:'主人给动物起了个奇怪的名字，你……',opts:[{t:'面不改色地叫它全名问诊',d:'X'},{t:'内心笑了但嘴上很正经',d:'X'},{t:'叫着叫着自己也觉得顺口了',d:'X'},{t:'偷偷记下来回去跟同事说',d:'X'}]}
+];
+
+const TYPES={
+EIM:{name:'情绪渡劫者',sub:'感受所有人的痛，自己一个人扛',color:'#7B6EF6',bg:'#EAE8FF',tc:'#3C3489',dims:['共情型','内化型','使命型'],
+icon:`<svg viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg"><circle cx="45" cy="45" r="40" fill="#EAE8FF" stroke="#AFA9EC" stroke-width="1.5"/><path d="M45 24C36 24 28 32 28 41C28 53 45 65 45 65C45 65 62 53 62 41C62 32 54 24 45 24Z" fill="#C4BFEE" stroke="#7B6EF6" stroke-width="2" stroke-linejoin="round"/><path d="M38 41C38 37.5 41 35 45 35C49 35 52 37.5 52 41" fill="none" stroke="#534AB7" stroke-width="2" stroke-linecap="round"/><line x1="30" y1="23" x2="27" y2="18" stroke="#AFA9EC" stroke-width="1.5" stroke-linecap="round"/><line x1="60" y1="23" x2="63" y2="18" stroke="#AFA9EC" stroke-width="1.5" stroke-linecap="round"/><line x1="37" y1="21" x2="35" y2="16" stroke="#AFA9EC" stroke-width="1.5" stroke-linecap="round"/><line x1="53" y1="21" x2="55" y2="16" stroke="#AFA9EC" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+scene:'手术室的灯灭了，你推开门，主人站在走廊尽头。你还没开口，眼眶已经先热了。',
+desc:['你是那种把诊室里所有悲喜都收进去的人。动物的痛，你感受；主人的崩溃，你承接；最难的消息，你亲口说。','你从不觉得自己特别了不起，只是放不下。放不下那只没撑住的橘猫，放不下主人离开时回头看的那一眼，放不下那些本可以不同结局的夜晚。','这份工作对你来说，从来不是职业。是某种你没法解释、也不打算解释的事。'],
+quote:'不是因为不累，\n是因为放不下。',
+owner:'谢谢你每次都那么认真。有一次你眼眶红了，我反而没那么害怕了——因为我知道，我家毛孩子在你眼里，不只是一个病例。',
+match:'你和「冷面热心肠」最搭——他们帮你撑着理性，你让他们记得还有温度。'},
+EIC:{name:'精准共情派',sub:'眼神是软的，判断是准的',color:'#2DA882',bg:'#E2F5EE',tc:'#085041',dims:['共情型','内化型','掌控型'],
+icon:`<svg viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg"><circle cx="45" cy="45" r="40" fill="#E2F5EE" stroke="#9FE1CB" stroke-width="1.5"/><rect x="28" y="30" width="32" height="30" rx="5" fill="#9FE1CB" stroke="#2DA882" stroke-width="2"/><line x1="35" y1="40" x2="53" y2="40" stroke="#085041" stroke-width="1.8" stroke-linecap="round"/><line x1="35" y1="46" x2="49" y2="46" stroke="#085041" stroke-width="1.8" stroke-linecap="round"/><line x1="35" y1="52" x2="43" y2="52" stroke="#085041" stroke-width="1.8" stroke-linecap="round"/><circle cx="58" cy="58" r="10" fill="#E2F5EE" stroke="#2DA882" stroke-width="2"/><path d="M54 58L57 61L63 55" stroke="#2DA882" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`,
+scene:'你一边轻声问主人"它最近吃饭怎么样"，脑子里已经列完了三个鉴别诊断。',
+desc:['你有一种外人看不出来的双轨运行能力：跟主人说话时温柔得像老朋友，脑子里其实在飞速过检查单。','你不是在表演温柔，你是真的关心。只是你的关心里，还藏着一份清醒——知道什么时候该安慰，什么时候必须直说，什么时候沉默反而是最好的答案。','同事说你"看起来好说话，但该硬的时候一点不软"。这是你在这行留下来最重要的理由。'],
+quote:'心软是选择，\n手稳是本事。',
+owner:'你是我见过最让我放心的医生。你说话的样子让我觉得被认真对待，但你做决定的样子又让我觉得一切都在掌控里。两件事你都做到了，我不知道这有多难。',
+match:'你和「技术型钢铁」是黄金搭档——你给温度，他们给精度，加在一起刚好是一个完整的好医生。'},
+EOM:{name:'发光型暖医',sub:'诊室因为你亮了一度',color:'#D85A30',bg:'#FDF0E8',tc:'#712B13',dims:['共情型','外化型','使命型'],
+icon:`<svg viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg"><circle cx="45" cy="45" r="40" fill="#FDF0E8" stroke="#F5C4B3" stroke-width="1.5"/><circle cx="45" cy="43" r="14" fill="#F0997B" stroke="#D85A30" stroke-width="2"/><line x1="45" y1="20" x2="45" y2="15" stroke="#F0997B" stroke-width="2.5" stroke-linecap="round"/><line x1="45" y1="71" x2="45" y2="66" stroke="#F0997B" stroke-width="2.5" stroke-linecap="round"/><line x1="22" y1="43" x2="17" y2="43" stroke="#F0997B" stroke-width="2.5" stroke-linecap="round"/><line x1="73" y1="43" x2="68" y2="43" stroke="#F0997B" stroke-width="2.5" stroke-linecap="round"/><line x1="29" y1="27" x2="25" y2="23" stroke="#F0997B" stroke-width="2.5" stroke-linecap="round"/><line x1="65" y1="63" x2="61" y2="59" stroke="#F0997B" stroke-width="2.5" stroke-linecap="round"/><line x1="61" y1="27" x2="65" y2="23" stroke="#F0997B" stroke-width="2.5" stroke-linecap="round"/><line x1="25" y1="63" x2="29" y2="59" stroke="#F0997B" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+scene:'你走进候诊室，紧张的小狗的尾巴，莫名其妙地摇了一下。',
+desc:['你是那种走进来气氛就变了的人。不是因为你特别会说话，是因为你真的在乎——动物感受得到，主人也感受得到。','你喜欢说，也喜欢听。下班了还在同事群里发今天碰到的奇怪病例，不是为了炫耀，是真的觉得好玩，真的想分享。','你入这行，是因为打心底觉得每一只动物都值得被好好对待。这件事从来没变过。累的时候，是它撑着你；撑不住的时候，是主人一句"谢谢"把你拉回来。'],
+quote:'治病是技术，\n治心是天赋。\n你两样都有。',
+owner:'每次带它来，它都会找你。我不知道动物懂不懂，但我知道，它信任你。我也是。',
+match:'你和「情绪渡劫者」互相需要——他们默默承受，你帮他们说出口；你能量快用完时，他们陪你静一静。'},
+EOC:{name:'话痨救星',sub:'嘴比手快，但两个都很靠谱',color:'#BA7517',bg:'#FEF3DF',tc:'#633806',dims:['共情型','外化型','掌控型'],
+icon:`<svg viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg"><circle cx="45" cy="45" r="40" fill="#FEF3DF" stroke="#FAC775" stroke-width="1.5"/><rect x="18" y="26" width="30" height="22" rx="6" fill="#FAC775" stroke="#BA7517" stroke-width="2"/><path d="M20 48L18 56L30 50" fill="#FAC775" stroke="#BA7517" stroke-width="2" stroke-linejoin="round"/><rect x="42" y="40" width="30" height="22" rx="6" fill="#EF9F27" stroke="#BA7517" stroke-width="2"/><path d="M70 62L72 70L60 64" fill="#EF9F27" stroke="#BA7517" stroke-width="2" stroke-linejoin="round"/><line x1="47" y1="49" x2="67" y2="49" stroke="#633806" stroke-width="1.5" stroke-linecap="round"/><line x1="47" y1="54" x2="61" y2="54" stroke="#633806" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+scene:'主人还没说完，你已经在白板上画图解释了。你喜欢把事情说清楚，因为清楚了，他们才能不害怕。',
+desc:['你相信信息是最好的镇定剂。主人越不懂，越害怕；你说得越清楚，他们越能一起面对。','你不是话多，你是认为这些话值得说。病因、方案、风险、预后——你都说，因为你觉得他们有权利知道。','下班之后你还在群里，不是闲不住，是真的觉得分享是一件有意义的事。你的存在，让周围的人都变得更有底气一点。'],
+quote:'说得明白，\n是另一种专业。',
+owner:'每次你解释完，我都觉得能睡着了。不是因为没事，是因为我真的懂了，懂了就不那么怕了。你说话的样子让我觉得，这件事我们是一起在面对的。',
+match:'你和「冷面热心肠」是天作之合——一个话多一个沉，但说的和不说的，都是同一件事：在乎。'},
+DIM:{name:'冷面热心肠',sub:'表情是一堵墙，心是一扇门',color:'#378ADD',bg:'#E6F1FB',tc:'#0C447C',dims:['隔离型','内化型','使命型'],
+icon:`<svg viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg"><circle cx="45" cy="45" r="40" fill="#E6F1FB" stroke="#B5D4F4" stroke-width="1.5"/><rect x="26" y="26" width="38" height="38" rx="5" fill="#B5D4F4" stroke="#378ADD" stroke-width="2"/><rect x="31" y="31" width="12" height="12" rx="3" fill="#E6F1FB" stroke="#378ADD" stroke-width="1.5"/><rect x="47" y="31" width="12" height="12" rx="3" fill="#E6F1FB" stroke="#378ADD" stroke-width="1.5"/><rect x="31" y="47" width="12" height="12" rx="3" fill="#378ADD" stroke="#185FA5" stroke-width="1.5"/><rect x="47" y="47" width="12" height="12" rx="3" fill="#E6F1FB" stroke="#378ADD" stroke-width="1.5"/><circle cx="37" cy="53" r="3.5" fill="#E6F1FB"/></svg>`,
+scene:'全诊室最乱的时候，你是最静的那个。家属哭，你不慌；情况急，你面不改色。没人知道你回到家会坐着发一会儿呆。',
+desc:['你不是不感受，你只是不说。','你在诊室里永远是最稳的那个。越是混乱，你越沉。这不是因为你冷漠，是因为你知道：你一慌，所有人都会慌。你用你的冷静，替他们撑住那个空间。','但没人看见的是，你回到家坐在沙发上，还在想今天那只没救回来的，想主人离开时的脚步声。你什么都感受到了，只是没有说出来。不说，不代表没有。'],
+quote:'冷静是给他们的，\n难过是自己的。\n这笔账，只有你自己知道。',
+owner:'你从来不会说什么安慰我的话，但你做的每一件事都让我觉得安心。我不需要你哭，我需要你在。你一直都在。',
+match:'你和「发光型暖医」最搭——他们说出你没说的，你撑住他们撑不住的。一动一静，刚好。'},
+DIC:{name:'技术型钢铁',sub:'相信数据，相信手上的感觉',color:'#5F5E5A',bg:'#F1EFE8',tc:'#2C2C2A',dims:['隔离型','内化型','掌控型'],
+icon:`<svg viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg"><circle cx="45" cy="45" r="40" fill="#F1EFE8" stroke="#D3D1C7" stroke-width="1.5"/><circle cx="45" cy="43" r="16" fill="none" stroke="#888780" stroke-width="2.5"/><circle cx="45" cy="43" r="9" fill="none" stroke="#5F5E5A" stroke-width="2"/><circle cx="45" cy="43" r="3.5" fill="#5F5E5A"/><line x1="45" y1="24" x2="45" y2="19" stroke="#888780" stroke-width="2" stroke-linecap="round"/><line x1="45" y1="63" x2="45" y2="68" stroke="#888780" stroke-width="2" stroke-linecap="round"/><line x1="26" y1="43" x2="21" y2="43" stroke="#888780" stroke-width="2" stroke-linecap="round"/><line x1="64" y1="43" x2="69" y2="43" stroke="#888780" stroke-width="2" stroke-linecap="round"/><line x1="56" y1="30" x2="60" y2="26" stroke="#888780" stroke-width="2" stroke-linecap="round"/></svg>`,
+scene:'你看了一眼片子，停顿了两秒，说出了三个月来没人查出来的那个病名。',
+desc:['你信奉一件事：技术过硬，才是对动物最真实的负责。','你不太会说软话，但你的判断很少出错。遇到难题同事来找你，不是因为你好说话，是因为你可靠。你研究一个病例可以研究到半夜，不是因为有人要求，是因为你觉得还没搞清楚。','你不需要掌声，你需要的是：下次再遇到同样的情况，能做得比这次更好。这就够了。'],
+quote:'不需要你喜欢我，\n需要你信任我。\n而信任，是我用结果换来的。',
+owner:'你说话不多，但你说的每一个字我都信。你不会随便安慰我，所以你说"问题不大"的时候，我是真的放心了。',
+match:'你和「精准共情派」是黄金搭档——你负责精准，他们负责温度。加在一起，是一个动物和主人都愿意信任的医生。'},
+DOM:{name:'嘴硬心软派',sub:'骂归骂，该上还是上',color:'#993C1D',bg:'#FAECE7',tc:'#4A1B0C',dims:['隔离型','外化型','使命型'],
+icon:`<svg viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg"><circle cx="45" cy="45" r="40" fill="#FAECE7" stroke="#F5C4B3" stroke-width="1.5"/><path d="M30 33Q45 24 60 33L63 55Q45 65 27 55Z" fill="#F0997B" stroke="#D85A30" stroke-width="2" stroke-linejoin="round"/><path d="M35 44Q39.5 49 45 44Q50.5 39 56 44" fill="none" stroke="#993C1D" stroke-width="2" stroke-linecap="round"/><line x1="37" y1="37" x2="40" y2="37" stroke="#993C1D" stroke-width="2.5" stroke-linecap="round"/><line x1="50" y1="37" x2="53" y2="37" stroke="#993C1D" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+scene:'你刚在群里抱怨完"累死了不想动"，五分钟后接了个急诊电话，二话没说就去了。',
+desc:['你嘴上永远比心先到。抱怨最多的那个，往往也是留到最后的那个。','你会吐槽，会翻白眼，下班了还在群里骂今天那个难缠的主人。但让你真的放弃一只动物，你做不到。嘴上说"这不关我事"，手上已经在多检查一遍了。','你骗不了自己，也骗不了一起干了这么多年的同事。大家都知道：你嘴上说不在乎，心里什么都在乎。这是你最可爱的地方，也是你最累的地方。'],
+quote:'骂归骂，\n该上还是上。\n因为良心不答应。',
+owner:'你第一眼看起来有点凶，但你检查的时候特别仔细，我问什么你都回答。我后来才明白，你不是凶，你只是累了。谢谢你还是认真对我家的猫。',
+match:'你和「情绪渡劫者」是意外的知己——你说，他们听；他们不说，你懂。都是把感受藏在行动里的人。'},
+DOC:{name:'江湖老炮儿',sub:'见过的，比说的多',color:'#3B6D11',bg:'#EAF3DE',tc:'#173404',dims:['隔离型','外化型','掌控型'],
+icon:`<svg viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg"><circle cx="45" cy="45" r="40" fill="#EAF3DE" stroke="#C0DD97" stroke-width="1.5"/><rect x="28" y="32" width="34" height="26" rx="4" fill="#C0DD97" stroke="#639922" stroke-width="2"/><line x1="28" y1="42" x2="62" y2="42" stroke="#639922" stroke-width="1.2" stroke-dasharray="4 3"/><circle cx="35" cy="37" r="3" fill="#639922"/><circle cx="45" cy="37" r="3" fill="#3B6D11"/><circle cx="55" cy="37" r="3" fill="#639922"/><line x1="35" y1="49" x2="57" y2="49" stroke="#3B6D11" stroke-width="2" stroke-linecap="round"/><line x1="35" y1="54" x2="50" y2="54" stroke="#3B6D11" stroke-width="2" stroke-linecap="round"/><path d="M39 62L45 70L51 62" fill="#C0DD97" stroke="#639922" stroke-width="1.5" stroke-linejoin="round"/></svg>`,
+scene:'新来的住院医说"这个病例好复杂"，你扫了一眼，说了一句话，他们安静了。',
+desc:['你在这行待的时间，比某些同事的年龄都长。','你说话直，不绕弯子，但说出来的每个字都是干货。你见过太多了——见过最难的手术，见过最崩溃的主人，见过以为救不回来却活下来的，也见过以为没问题却走了的。这些经历没让你变冷，让你变准了。','你不煽情，但你的判断救过的命，比你记得的还多。你吐槽现在的年轻人，但遇到真的想学的，你会多说两句。因为你知道，这行需要人传下去。'],
+quote:'不是油腻，\n是经历过。\n每一道皱纹，都是一个\n没法说完的故事。',
+owner:'你一看就是做了很久的医生。你说"放心"的时候跟别人不一样，我说不清楚哪里不一样，就是更信。谢谢你还在做这件事。',
+match:'你和任何新人都是对方需要的人——你有他们没有的经验，他们有你曾经有过的热情。这行，需要你们在同一个诊室里。'}
+};
+
+let cur=0,answers=new Array(20).fill(null);
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function startQuiz(){cur=0;answers=new Array(20).fill(null);renderQ();show('quiz');}
+
+function renderQ(){
+  const q=Q[cur];
+  document.getElementById('prog-label').textContent=`第 ${cur+1} 题`;
+  document.getElementById('prog-count').textContent=`${cur+1} / 20`;
+  document.getElementById('prog-fill').style.width=((cur+1)/20*100)+'%';
+  const tag=document.getElementById('dim-tag');
+  tag.textContent=q.tag;
+  tag.className='quiz-dim-tag'+(q.bonus?' bonus':'');
+  document.getElementById('q-text').textContent=q.text;
+  const opts=document.getElementById('q-opts');
+  opts.innerHTML='';
+  q.opts.forEach((o,i)=>{
+    const b=document.createElement('button');
+    b.className='opt'+(answers[cur]===i?' selected':'');
+    b.textContent=o.t;
+    b.onclick=()=>select(i);
+    opts.appendChild(b);
+  });
+  const btn=document.getElementById('btn-next');
+  btn.textContent=cur===19?'查看我的结果 →':'下一题';
+  btn.className='btn-next'+(answers[cur]!==null?' ready':'');
+}
+
+function select(i){
+  answers[cur]=i;
+  document.querySelectorAll('.opt').forEach((b,j)=>b.classList.toggle('selected',j===i));
+  document.getElementById('btn-next').classList.add('ready');
+}
+
+function goBack(){if(cur>0){cur--;renderQ();}else{show('intro');}}
+
+function goNext(){
+  if(answers[cur]===null)return;
+  if(cur===19){showLoading();return;}
+  cur++;renderQ();
+  document.getElementById('quiz').scrollTop=0;
+}
+
+function showLoading(){
+  show('loading');
+  setTimeout(showResult,2000);
+}
+
+function calcType(){
+  let E=0,D=0,I=0,O=0,M=0,C=0;
+  Q.forEach((q,qi)=>{
+    if(q.bonus||answers[qi]===null)return;
+    const d=q.opts[answers[qi]].d;
+    if(d==='E')E++;else if(d==='D')D++;
+    else if(d==='I')I++;else if(d==='O')O++;
+    else if(d==='M')M++;else if(d==='C')C++;
+  });
+  return{type:(E>=D?'E':'D')+(I>=O?'I':'O')+(M>=C?'M':'C'),E,D,I,O,M,C};
+}
+
+function showResult(){
+  const{type,E,D,I,O,M,C}=calcType();
+  const r=TYPES[type]||TYPES['EOM'];
+  const totalED=E+D,totalIO=I+O,totalMC=M+C;
+  const eP=Math.round(E/Math.max(totalED,1)*100);
+  const oP=Math.round(O/Math.max(totalIO,1)*100);
+  const mP=Math.round(M/Math.max(totalMC,1)*100);
+
+  const scroll=document.getElementById('result-scroll');
+  scroll.innerHTML=`
+<div style="background:${r.bg};padding:2.5rem 1.5rem 2rem;text-align:center;position:relative;overflow:hidden">
+  <div style="position:absolute;inset:0;opacity:.08;background:radial-gradient(circle at 70% 30%,${r.color} 0%,transparent 60%)"></div>
+  <div style="width:90px;height:90px;margin:0 auto 1.25rem;position:relative;z-index:1">${r.icon}</div>
+  <div style="font-size:11px;letter-spacing:.2em;color:${r.tc};margin-bottom:.4rem;opacity:.7;position:relative;z-index:1">VBTI · ${type}</div>
+  <div style="font-family:'Noto Serif SC',serif;font-size:28px;font-weight:600;margin-bottom:.4rem;color:${r.tc};position:relative;z-index:1">${r.name}</div>
+  <div style="font-size:14px;color:${r.tc};opacity:.8;position:relative;z-index:1;margin-bottom:1.25rem">${r.sub}</div>
+  <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;position:relative;z-index:1">
+    ${r.dims.map(d=>`<span style="font-size:11px;padding:4px 12px;border-radius:12px;border:1px solid ${r.color};color:${r.color};background:${r.bg}">${d}</span>`).join('')}
+  </div>
+</div>
+
+<div style="padding:1.25rem 1.5rem;border-top:1px solid #E2DDD6">
+  <div style="font-size:11px;letter-spacing:.15em;color:#8A8680;font-weight:500;margin-bottom:.75rem">你的专属场景</div>
+  <div style="font-size:14px;line-height:1.9;color:#4A4740;font-style:italic;padding:12px 14px;background:#fff;border-radius:10px;border-left:3px solid ${r.color}">${r.scene}</div>
+</div>
+
+<div style="padding:0 1.5rem 1.25rem;border-top:1px solid #E2DDD6">
+  <div style="font-size:11px;letter-spacing:.15em;color:#8A8680;font-weight:500;margin-bottom:.75rem;padding-top:1.25rem">这就是你</div>
+  ${r.desc.map(p=>`<div style="font-size:14px;line-height:2;color:#4A4740;margin-bottom:.9rem">${p}</div>`).join('')}
+</div>
+
+<div style="padding:1.25rem 1.5rem;border-top:1px solid #E2DDD6;background:${r.bg}">
+  <div style="font-family:'Noto Serif SC',serif;font-size:19px;font-weight:600;line-height:1.75;text-align:center;color:${r.tc}">${r.quote.replace(/\n/g,'<br>')}</div>
+</div>
+
+<div style="padding:1.25rem 1.5rem;border-top:1px solid #E2DDD6">
+  <div style="font-size:11px;letter-spacing:.15em;color:${r.color};font-weight:500;margin-bottom:.65rem">宠主想对你说</div>
+  <div style="font-size:13px;line-height:1.9;color:#4A4740;padding:12px 14px;background:#fff;border-radius:10px">${r.owner}</div>
+</div>
+
+<div style="padding:1.25rem 1.5rem;border-top:1px solid #E2DDD6">
+  <div style="font-size:11px;letter-spacing:.15em;color:#8A8680;font-weight:500;margin-bottom:.75rem">你的三维度分布</div>
+  <div style="margin-bottom:10px;display:flex;align-items:center;gap:10px">
+    <span style="font-size:12px;color:#8A8680;width:52px;text-align:right;flex-shrink:0">共情</span>
+    <div style="flex:1;height:6px;background:#E2DDD6;border-radius:3px;overflow:hidden"><div style="height:6px;width:${eP}%;background:${r.color};border-radius:3px;transition:width .8s"></div></div>
+    <span style="font-size:12px;color:#8A8680;width:52px;flex-shrink:0">${E>=D?'共情型':'隔离型'}</span>
+  </div>
+  <div style="margin-bottom:10px;display:flex;align-items:center;gap:10px">
+    <span style="font-size:12px;color:#8A8680;width:52px;text-align:right;flex-shrink:0">外化</span>
+    <div style="flex:1;height:6px;background:#E2DDD6;border-radius:3px;overflow:hidden"><div style="height:6px;width:${oP}%;background:${r.color};border-radius:3px;transition:width .8s .1s"></div></div>
+    <span style="font-size:12px;color:#8A8680;width:52px;flex-shrink:0">${O>=I?'外化型':'内化型'}</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span style="font-size:12px;color:#8A8680;width:52px;text-align:right;flex-shrink:0">使命</span>
+    <div style="flex:1;height:6px;background:#E2DDD6;border-radius:3px;overflow:hidden"><div style="height:6px;width:${mP}%;background:${r.color};border-radius:3px;transition:width .8s .2s"></div></div>
+    <span style="font-size:12px;color:#8A8680;width:52px;flex-shrink:0">${M>=C?'使命型':'掌控型'}</span>
+  </div>
+</div>
+
+<div style="padding:1.25rem 1.5rem;border-top:1px solid #E2DDD6">
+  <div style="font-size:13px;line-height:1.8;color:#4A4740;padding:12px 14px;background:${r.bg};border-radius:10px;border:1px solid ${r.color}22">${r.match}</div>
+</div>
+
+<div style="padding:1.5rem 1.5rem 2.5rem;border-top:1px solid #E2DDD6">
+  <div style="font-size:12px;color:#8A8680;text-align:center;margin-bottom:1rem">截图发朋友圈，@你认识的兽医来测</div>
+  <button onclick="copyResult('${type}','${r.name}')" style="width:100%;background:#1A1814;color:#F7F4EE;border:none;border-radius:40px;padding:15px;font-size:15px;font-family:'Noto Serif SC',serif;cursor:pointer;letter-spacing:.04em;margin-bottom:10px">复制结果文案</button>
+  <button onclick="startQuiz()" style="width:100%;background:none;border:1px solid #E2DDD6;border-radius:40px;padding:14px;font-size:14px;font-family:'Noto Sans SC',sans-serif;cursor:pointer;color:#4A4740;letter-spacing:.03em">再测一次</button>
+</div>`;
+
+  show('result');
+}
+
+function copyResult(type,name){
+  const r=TYPES[type];
+  const text=`我测了VBTI兽医人格测评，结果是「${name}」\n\n${r.sub}\n\n${r.quote.replace(/\n/g,'')}\n\n你是哪种兽医灵魂？来测测 →`;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(()=>showToast('文案已复制，去发朋友圈吧'));
+  }else{
+    const ta=document.createElement('textarea');
+    ta.value=text;document.body.appendChild(ta);ta.select();
+    document.execCommand('copy');document.body.removeChild(ta);
+    showToast('文案已复制，去发朋友圈吧');
+  }
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+</script>
+</body>
+</html>
